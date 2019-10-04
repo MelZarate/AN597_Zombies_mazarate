@@ -1,0 +1,93 @@
+---
+title: "Homework 3 - ZOMBIES"
+author: "Mel Zarate"
+date: "10/4/2019"
+output: html_document
+---
+This is my *first* attempt at homework 3, analyzing a dataset of humans who have survived the zombie apocalypse.
+
+First, I will load in the data of the survivors: 
+```{r}
+library(curl)
+surv <- curl("https://raw.githubusercontent.com/fuzzyatelin/fuzzyatelin.github.io/master/AN597_Fall19/zombies.csv")
+s <- read.csv(surv, header = TRUE, sep = ",", stringsAsFactors = FALSE) #separated by commas 
+head(s) #check out the data
+```
+
+1. Calculate the population mean and standard deviation for each quantitative random variable (height, weight, age, number of zombies killed, and years of education). NOTE: You will not want to use the built in var() and sd() commands as these are for samples.
+
+```{r}
+mean(s[["height"]])
+mean(s[["weight"]])
+mean(s[["zombies_killed"]])
+mean(s[["years_of_education"]])
+mean(s[["age"]])
+```
+
+
+2. Use {ggplot} to make boxplots of each of these variables by gender.
+
+```{r}
+library(ggplot2) 
+ggplot(s, aes(x=weight, fill = gender))+geom_bar()+ylim(0,100)
+```
+So, uh, nothing is coming up??? I've been messing with it for some time now and can't find the problem. 
+
+3. Use {ggplot} to make scatterplots of height and weight in relation to age. Do these variables seem to be related? In what way?
+
+```{r}
+ggplot(s, aes(x=height, y=age))+geom_point(color="forestgreen")
+ggplot(s, aes(x=weight, y=age))+geom_point(color="darkblue")
+```
+As we could predict, it does seem as though both height and weight increase with the person's age. However, that correlation seems to be tighter when relating height and age than weight and age. 
+
+4. Using histograms and Q-Q plots, check whether the quantitative variables seem to be drawn from a normal distribution. Which seem to be and which do not (hint: not all are drawn from the normal distribution)? For those that are not normal, can you determine from which common distribution they are drawn?
+
+Lets check the distribution through histograms first: 
+
+```{r}
+hist(s$height,probability=TRUE, main="Histogram of normal
+data",xlab="Approximately normally distributed data")
+```
+So far this looks about right, seeing as the tallest bar is about where the mean should be. Now I'll do the same for the other variables: 
+
+```{r}
+hist(s$weight,probability=TRUE, main="Histogram of normal
+data (weight)",xlab="Approximately normally distributed data")
+hist(s$age,probability=TRUE, main="Histogram of normal
+data (age)",xlab="Approximately normally distributed data")
+hist(s$zombies_killed,probability=TRUE, main="Histogram of normal
+data (Zombies killed)",xlab="Approximately normally distributed data")
+hist(s$years_of_education,probability=TRUE, main="Histogram of normal
+data (Years of Ed)",xlab="Approximately normally distributed data")
+```
+As far as the histograms go, it looks like all variables are normally distributed about the mean except for the years of education and number of zombies killed. Now let's try the Q-Q plots.
+
+First I am going to look at those three that seem normally distributed:
+```{r}
+qqnorm(s$height,main="Normal QQ plot random normal variables (height)")
+qqline(s$height,col="gray")
+qqnorm(s$weight,main="Normal QQ plot random normal variables (weight)")
+qqline(s$weight,col="gray")
+qqnorm(s$age,main="Normal QQ plot random normal variables (age)")
+qqline(s$age,col="gray")
+```
+All the dots are either on or pretty close to the line, so seems pretty normal!
+
+Now the other two variables:
+
+```{r}
+qqnorm(s$zombies_killed,main="Normal QQ plot random normal variables (zombies killed)")
+qqline(s$zombies_killed,col="gray")
+qqnorm(s$years_of_education,main="Normal QQ plot random normal variables (years of ed)")
+qqline(s$years_of_education,col="gray")
+```
+... I'm going to go out on a limb here and say that this is not normal. Which is what I predicted based off of the histograms. 
+
+5. Now use the sample() function to sample ONE subset of 30 zombie survivors (without replacement) from this population and calculate the mean and sample standard deviation for each variable. Also estimate the standard error for each variable, and construct the 95% confidence interval for each mean. Note that for the variables that are not drawn from the normal distribution, you may need to base your estimate of the CIs on slightly different code than for the normal…
+
+
+
+6. Now draw 99 more random samples of 30 zombie apocalypse survivors, and calculate the mean for each variable for each of these samples. Together with the first sample you drew, you now have a set of 100 means for each variable (each based on 30 observations), which constitutes a sampling distribution for each variable. What are the means and standard deviations of this distribution of means for each variable? How do the standard deviations of means compare to the standard errors estimated in [5]? What do these sampling distributions look like (a graph might help here)? Are they normally distributed? What about for those variables that you concluded were not originally drawn from a normal distribution?
+
+Because it is without replacement, the sampel size is shrinking. 
