@@ -29,9 +29,8 @@ mean(s[["age"]])
 
 ```{r}
 library(ggplot2) 
-ggplot(data=s,aes(weight))+geom_bar(aes(fill=gender))
+ggplot(data=s,aes(weight, fill=gender))+geom_histogram(binwidth=6)
 ```
-So, uh, nothing is coming up??? I've been messing with it for some time now and can't find the problem. 
 
 3. Use {ggplot} to make scatterplots of height and weight in relation to age. Do these variables seem to be related? In what way?
 
@@ -149,18 +148,30 @@ pois.exact(n$zombies_killed, pt = 1, conf.level = 0.975)
 
 ```{r}
 a <- replicate(100, sample(s$age, 30, replace = FALSE)) #take 100 subsets of 30 ages 
-a
-mean(a)
-
+a #each column is a subset of 30
+mean(a) 
+w <- replicate(100, sample(s$weight, 30, replace = FALSE)) 
+mean(w)
+h <- replicate(100, sample(s$height, 30, replace = FALSE)) 
+mean(h)
+z <- replicate(100, sample(s$zombies_killed, 30, replace = FALSE)) 
+mean(z)
+e <- replicate(100, sample(s$years_of_education, 30, replace = FALSE)) 
+mean(e)
 ```
 
-
-
-Because it is without replacement, the sampel size is shrinking. 
+Here are the CIs for each of replicated subsets: 
+```{r}
+quantile(a, c(0.025, 0.975))
+quantile(w, c(0.025, 0.975))
+quantile(h, c(0.025, 0.975))
+quantile(z, c(0.025, 0.975))
+quantile(e, c(0.025, 0.975))
+```
 
 Challenges: 
 
-1. I'm still having nothing come up in my plot of the different variables. I tried changing the y axis and setting y to different options (counts, count.data, etc).
+1. Nothing was coming up in my ggplot bar graph. I tried changing a bunch of parameteres and then realized that the geom_bar() function hasn't been updated and I should use geom_histogram()
 
 2. I had some trouble figuring out how to take a single sample. Looking into the function, it seems like i should be able to just call the data,state how many I want in the smaple, and replace = FALSE, but I keep getting an error that says the sample is larger than the population. Eventually, I loaded dplyr and used the sample_n() function and it worked. 
 
@@ -168,4 +179,4 @@ Challenges:
 
 4. I'm not sure how to add the one subset that I had already been working on so I just did the replication for 100 samples. I also wasn't sure if we were supposed to use the bootstrapping method here; I tried that for all of the data and had trouble figuring out how to take the means of the means of each subset. After googling, it seems I should do it one varirable at a time. But isn't this NOT taking a whole subset of 30 people each time? 
 
-5.
+5. Interpretting the matrix that resulted from the 100 replications to find the means of the means. I'm pretty sure the way my code is now just find the overall mean.  
