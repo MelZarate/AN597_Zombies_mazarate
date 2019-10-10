@@ -1,0 +1,191 @@
+---
+title: "Peer Commentary"
+author: "Me"
+date: "10/10/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+LH: Ok for question 1 you forgot standard deviation. For question 2 you need to make box plots not bar plots. For question 3 you used d as your dataset when you actually have your dataset defined as s. When I run your code I do not get an output. I think you may have mixed up the fact that Chris defines his data as d on the website but you changed that when you brought in the data. For question 4 I got the same results. I will say however, I'm not sure if the non-normal data is poisson. I'm not sure but I think it's skewed and I think skewed data is sometimes refered to as beta distribution...but like idk. For question 5 your forgot SD again, but I like your method for finding standard error. Way less complicated than mine. Again not sure if poisson is the right distribution but again I could also be wrong. Now when I run pois.exact(n$zombies_killed, pt = 1, conf.level = 0.975), I get an error...not sure why. For question six you put in the CIs, but you should try and calculate a table of 100 means and SD for your data. You should then take a mean of means and an SD of that.  
+
+Af for your troubles: I did the same thing and used a package cause I got the same error that sample was larger than poplulation. Tbh I don't think those were poisson distributions and honestly I just didn't assign a distribution for them. Whatever function I used I could use it for normal distributions and I could also just not used a distribution type...I have no idea if that was correct of me either. I didn't replace the first subset I took either. I just took an addition 100. I think I used a boostrapping package cuase for the life of me I cannot figure out for loops. They never work even when they should work. I never plotted my mean of means, but I did calculate them...I think I just gave up after accomplishing that cause it took a while. 
+
+
+This is my *first* attempt at homework 3, analyzing a dataset of humans who have survived the zombie apocalypse.
+
+First, I will load in the data of the survivors: 
+```{r}
+library(curl)
+surv <- curl("https://raw.githubusercontent.com/fuzzyatelin/fuzzyatelin.github.io/master/AN597_Fall19/zombies.csv")
+s <- read.csv(surv, header = TRUE, sep = ",", stringsAsFactors = FALSE) #separated by commas 
+head(s) #check out the data
+```
+
+1. Calculate the population mean and standard deviation for each quantitative random variable (height, weight, age, number of zombies killed, and years of education). NOTE: You will not want to use the built in var() and sd() commands as these are for samples.
+
+```{r}
+mean(s[["height"]])
+mean(s[["weight"]])
+mean(s[["zombies_killed"]])
+mean(s[["years_of_education"]])
+mean(s[["age"]])
+```
+
+
+2. Use {ggplot} to make boxplots of each of these variables by gender.
+
+```{r}
+library(ggplot2) 
+ggplot(data=s,aes(weight, fill=gender))+geom_histogram(binwidth=6)
+```
+
+3. Use {ggplot} to make scatterplots of height and weight in relation to age. Do these variables seem to be related? In what way?
+
+```{r}
+g <- ggplot(data = d, aes(x = height, y = age))
+g <- g + geom_point(color="forestgreen")
+g <- g + geom_smooth(method = "lm", formula = y ~ x)
+g
+```
+And for weight and age: 
+
+```{r}
+g <- ggplot(data = d, aes(x = weight, y = age))
+g <- g + geom_point(color="darkblue")
+g <- g + geom_smooth(method = "lm", formula = y ~ x)
+g
+```
+
+As we could predict, it does seem as though both height and weight increase with the person's age. However, that correlation seems to be tighter when relating height and age, while weight and age are correlated, but has more deviation within the data and is less positively correlated. The confidence intervals (in gray) are less tight. 
+
+4. Using histograms and Q-Q plots, check whether the quantitative variables seem to be drawn from a normal distribution. Which seem to be and which do not (hint: not all are drawn from the normal distribution)? For those that are not normal, can you determine from which common distribution they are drawn?
+
+Lets check the distribution through histograms first: 
+
+```{r}
+hist(s$height,probability=TRUE, main="Histogram of normal
+data",xlab="Approximately normally distributed data")
+```
+So far this looks about right, seeing as the tallest bar is about where the mean should be. Now I'll do the same for the other variables: 
+
+```{r}
+hist(s$weight,probability=TRUE, main="Histogram of normal
+data (weight)",xlab="Approximately normally distributed data")
+hist(s$age,probability=TRUE, main="Histogram of normal
+data (age)",xlab="Approximately normally distributed data")
+hist(s$zombies_killed,probability=TRUE, main="Histogram of normal
+data (Zombies killed)",xlab="Approximately normally distributed data")
+hist(s$years_of_education,probability=TRUE, main="Histogram of normal
+data (Years of Ed)",xlab="Approximately normally distributed data")
+```
+As far as the histograms go, it looks like all variables are normally distributed about the mean except for the years of education and number of zombies killed. Now let's try the Q-Q plots.
+
+First I am going to look at those three that seem normally distributed:
+```{r}
+qqnorm(s$height,main="Normal QQ plot random normal variables (height)")
+qqline(s$height,col="gray")
+qqnorm(s$weight,main="Normal QQ plot random normal variables (weight)")
+qqline(s$weight,col="gray")
+qqnorm(s$age,main="Normal QQ plot random normal variables (age)")
+qqline(s$age,col="gray")
+```
+All the dots are either on or pretty close to the line, so seems pretty normal!
+
+Now the other two variables:
+
+```{r}
+qqnorm(s$zombies_killed,main="Normal QQ plot random normal variables (zombies killed)")
+qqline(s$zombies_killed,col="gray")
+qqnorm(s$years_of_education,main="Normal QQ plot random normal variables (years of ed)")
+qqline(s$years_of_education,col="gray")
+```
+... I'm going to go out on a limb here and say that this is not normal. Which is what I predicted based off of the histograms. 
+
+5. Now use the sample() function to sample ONE subset of 30 zombie survivors (without replacement) from this population and calculate the mean and sample standard deviation for each variable. Also estimate the standard error for each variable, and construct the 95% confidence interval for each mean. Note that for the variables that are not drawn from the normal distribution, you may need to base your estimate of the CIs on slightly different code than for the normal…
+
+```{r}
+?sample() #help
+library(dplyr)
+n <- sample_n(s, 30, replace = FALSE, )
+n
+```
+means: 
+```{r}
+mean(n[["height"]])
+mean(n[["weight"]])
+mean(n[["zombies_killed"]])
+mean(n[["years_of_education"]])
+mean(n[["age"]])
+```
+Standard error: 
+```{r}
+library(sciplot)
+se(n$height)
+se(n$weight)
+se(n$age)
+se(n$zombies_killed)
+se(n$years_of_education)
+```
+CI- I'll start with those that I believe are distributed normally:
+
+Height
+```{r}
+upper <- mean(n$height) + qnorm(0.975, mean=0, sd=1)*se(n$height) 
+lower <- mean(n$height) + qnorm(0.025, mean=0, sd=1)*se(n$height) #looking at top and bottom 2.5%
+cih <- c(lower,upper) #CI for height
+upper <- mean(n$weight) + qnorm(0.975, mean=0, sd=1)*se(n$weight)
+lower <- mean(n$weight) + qnorm(0.025, mean=0, sd=1)*se(n$weight) #looking at top and bottom 2.5%
+ciw <- c(lower,upper) #CI for weight
+upper <- mean(n$age) + qnorm(0.975, mean=0, sd=1)*se(n$age)
+lower <- mean(n$age) + qnorm(0.025, mean=0, sd=1)*se(n$age) #looking at top and bottom 2.5%
+cia <- c(lower,upper) #CI age
+cih
+ciw
+cia
+```
+Now for the others that are in a poisson distribution (maybe?)
+```{r}
+install.packages("epitools")
+library(epitools)
+?pois.exact
+pois.exact(n$zombies_killed, pt = 1, conf.level = 0.975)
+```
+
+6. Now draw 99 more random samples of 30 zombie apocalypse survivors, and calculate the mean for each variable for each of these samples. Together with the first sample you drew, you now have a set of 100 means for each variable (each based on 30 observations), which constitutes a sampling distribution for each variable. What are the means and standard deviations of this distribution of means for each variable? How do the standard deviations of means compare to the standard errors estimated in [5]? What do these sampling distributions look like (a graph might help here)? Are they normally distributed? What about for those variables that you concluded were not originally drawn from a normal distribution? After that, for each variable I believe he wanted us to plot the means in a histogram and look and see if the means of the non normally distributed datasets are actually normally distributed. I don't think I did that at all though. 
+
+```{r}
+a <- replicate(100, sample(s$age, 30, replace = FALSE)) #take 100 subsets of 30 ages 
+a #each column is a subset of 30
+mean(a) 
+w <- replicate(100, sample(s$weight, 30, replace = FALSE)) 
+mean(w)
+h <- replicate(100, sample(s$height, 30, replace = FALSE)) 
+mean(h)
+z <- replicate(100, sample(s$zombies_killed, 30, replace = FALSE)) 
+mean(z)
+e <- replicate(100, sample(s$years_of_education, 30, replace = FALSE)) 
+mean(e)
+```
+
+Here are the CIs for each of replicated subsets: 
+```{r}
+quantile(a, c(0.025, 0.975))
+quantile(w, c(0.025, 0.975))
+quantile(h, c(0.025, 0.975))
+quantile(z, c(0.025, 0.975))
+quantile(e, c(0.025, 0.975))
+```
+
+Challenges: 
+
+1. Nothing was coming up in my ggplot bar graph. I tried changing a bunch of parameteres and then realized that the geom_bar() function hasn't been updated and I should use geom_histogram()
+
+2. I had some trouble figuring out how to take a single sample. Looking into the function, it seems like i should be able to just call the data,state how many I want in the smaple, and replace = FALSE, but I keep getting an error that says the sample is larger than the population. Eventually, I loaded dplyr and used the sample_n() function and it worked. 
+
+3. It took me some googling to figure out how to find the confidence intervals for a poisson distribution. But I'm still not even sure that this is a poisson distribution... Basically lost when calculating CI for any non-normal distributions.
+
+4. I'm not sure how to add the one subset that I had already been working on so I just did the replication for 100 samples. I also wasn't sure if we were supposed to use the bootstrapping method here; I tried that for all of the data and had trouble figuring out how to take the means of the means of each subset. After googling, it seems I should do it one varirable at a time. But isn't this NOT taking a whole subset of 30 people each time? 
+
+5. Interpretting the matrix that resulted from the 100 replications to find the means of the means. I'm pretty sure the way my code is now just find the overall mean.  
