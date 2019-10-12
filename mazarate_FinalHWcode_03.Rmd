@@ -1,0 +1,314 @@
+---
+title: "Homework 3 - ZOMBIES"
+author: "Mel Zarate"
+date: "10/4/2019"
+output: html_document
+---
+
+First, I will load in the data of the survivors: 
+```{r}
+library(curl)
+surv <- curl("https://raw.githubusercontent.com/fuzzyatelin/fuzzyatelin.github.io/master/AN597_Fall19/zombies.csv")
+s <- read.csv(surv, header = TRUE, sep = ",", stringsAsFactors = FALSE) #separated by commas 
+head(s) #check out the data
+```
+
+1. Calculate the population mean and standard deviation for each quantitative random variable (height, weight, age, number of zombies killed, and years of education). NOTE: You will not want to use the built in var() and sd() commands as these are for samples.
+
+```{r}
+mean(s[["height"]])
+mean(s[["weight"]])
+mean(s[["zombies_killed"]])
+mean(s[["years_of_education"]])
+mean(s[["age"]])
+n <- 1000 #there are 1000 people
+sqrt((n-1)/n) * sd(s$height) #finding the SD of the POPULATION (sd() isn't good enough here)
+sqrt((n-1)/n) * sd(s$weight)
+sqrt((n-1)/n) * sd(s$age)
+sqrt((n-1)/n) * sd(s$zombies_killed)
+sqrt((n-1)/n) * sd(s$years_of_education)
+```
+
+
+2. Use {ggplot} to make boxplots of each of these variables by gender.
+
+```{r}
+library(ggplot2) 
+h <- ggplot(s, aes(x=gender, y=height)) + 
+  geom_boxplot()
+w <- ggplot(s, aes(x=gender, y=weight)) + 
+  geom_boxplot()
+a <- ggplot(s, aes(x=gender, y=age)) + 
+  geom_boxplot()
+z <- ggplot(s, aes(x=gender, y=zombies_killed)) + 
+  geom_boxplot()
+e <- ggplot(s, aes(x=gender, y=years_of_education)) + 
+  geom_boxplot()
+h
+w
+a
+z
+e
+```
+So the genders really only differ in height and weight. 
+
+3. Use {ggplot} to make scatterplots of height and weight in relation to age. Do these variables seem to be related? In what way?
+
+```{r}
+g <- ggplot(data = s, aes(x = height, y = age))
+g <- g + geom_point(color="forestgreen")
+g <- g + geom_smooth(method = "lm", formula = y ~ x)
+g
+```
+And for weight and age: 
+
+```{r}
+g <- ggplot(data = s, aes(x = weight, y = age))
+g <- g + geom_point(color="darkblue")
+g <- g + geom_smooth(method = "lm", formula = y ~ x)
+g
+```
+
+As we could predict, it does seem as though both height and weight increase with the person's age. However, that correlation seems to be tighter when relating height and age, while weight and age are correlated, but has more deviation within the data and is less positively correlated. The confidence intervals (in gray) are less tight. 
+
+4. Using histograms and Q-Q plots, check whether the quantitative variables seem to be drawn from a normal distribution. Which seem to be and which do not (hint: not all are drawn from the normal distribution)? For those that are not normal, can you determine from which common distribution they are drawn?
+
+Lets check the distribution through histograms first: 
+
+```{r}
+hist(s$height,probability=TRUE, main="Histogram of normal
+data",xlab="Approximately normally distributed data")
+```
+So far this looks about right, seeing as the tallest bar is about where the mean should be. Now I'll do the same for the other variables: 
+
+```{r}
+hist(s$weight,probability=TRUE, main="Histogram of normal
+data (weight)",xlab="Approximately normally distributed data")
+hist(s$age,probability=TRUE, main="Histogram of normal
+data (age)",xlab="Approximately normally distributed data")
+hist(s$zombies_killed,probability=TRUE, main="Histogram of normal
+data (Zombies killed)",xlab="Approximately normally distributed data")
+hist(s$years_of_education,probability=TRUE, main="Histogram of normal
+data (Years of Ed)",xlab="Approximately normally distributed data")
+```
+As far as the histograms go, it looks like all variables are normally distributed about the mean except for the years of education and number of zombies killed. Now let's try the Q-Q plots.
+
+First I am going to look at those three that seem normally distributed:
+```{r}
+qqnorm(s$height,main="Normal QQ plot random normal variables (height)")
+qqline(s$height,col="gray")
+qqnorm(s$weight,main="Normal QQ plot random normal variables (weight)")
+qqline(s$weight,col="gray")
+qqnorm(s$age,main="Normal QQ plot random normal variables (age)")
+qqline(s$age,col="gray")
+```
+All the dots are either on or pretty close to the line, so seems pretty normal!
+
+Now the other two variables:
+
+```{r}
+qqnorm(s$zombies_killed,main="Normal QQ plot random normal variables (zombies killed)")
+qqline(s$zombies_killed,col="gray")
+qqnorm(s$years_of_education,main="Normal QQ plot random normal variables (years of ed)")
+qqline(s$years_of_education,col="gray")
+```
+... I'm going to go out on a limb here and say that this is not normal. Which is what I predicted based off of the histograms. I'm not sure how to tell from the Q-Q plots, but the way they skew to the left in the histograms makes me think that they are poisson. 
+
+5. Now use the sample() function to sample ONE subset of 30 zombie survivors (without replacement) from this population and calculate the mean and sample standard deviation for each variable. Also estimate the standard error for each variable, and construct the 95% confidence interval for each mean. Note that for the variables that are not drawn from the normal distribution, you may need to base your estimate of the CIs on slightly different code than for the normal…
+
+```{r}
+library(dplyr)
+n <- sample_n(s, 30, replace = FALSE, )
+n
+```
+Means of each variable:
+```{r}
+mean(n[["height"]])
+mean(n[["weight"]])
+mean(n[["age"]])
+l_z <- mean(n[["zombies_killed"]]) #going to use this for lambda when finding CI
+l_e <- mean(n[["years_of_education"]]) #going to use this for lambda when finding CI
+l_z
+l_e
+```
+SD: This is a sample so now I can simply use the sd() function!
+```{r}
+sd_h <- sd(s$height)
+sd_w <- sd(s$weight)
+sd_a <- sd(s$age)
+sd_z <- sd(s$zombies_killed)
+sd_e <- sd(s$years_of_education)
+sd_h
+sd_w
+sd_a
+sd_z
+sd_e
+```
+Means and SDs are very close to those of the full population. 
+
+Standard error: I'm just going to use the equations for SE in a normal and poisson distribution here
+```{r}
+se_age <- sd_a/sqrt(30) #30 is the sample size
+se_height <- sd_h/sqrt(30)
+se_weight <- sd_w/sqrt(30)
+se_zomb <-  sqrt(l_z/30)
+se_ed <- sqrt(l_e/30)
+se_age
+se_height
+se_weight
+se_zomb
+se_ed
+```
+CI- I'll start with those that I believe are distributed normally:
+
+Height
+```{r}
+upper <- mean(n$height) + qnorm(0.975, mean=0, sd=1)*se_height 
+lower <- mean(n$height) + qnorm(0.025, mean=0, sd=1)*se_height #looking at top and bottom 2.5%
+cih <- c(lower,upper) #CI for height
+upper <- mean(n$weight) + qnorm(0.975, mean=0, sd=1)*se_weight
+lower <- mean(n$weight) + qnorm(0.025, mean=0, sd=1)*se_weight #looking at top and bottom 2.5%
+ciw <- c(lower,upper) #CI for weight
+upper <- mean(n$age) + qnorm(0.975, mean=0, sd=1)*se_age
+lower <- mean(n$age) + qnorm(0.025, mean=0, sd=1)*se_age #looking at top and bottom 2.5%
+cia <- c(lower,upper) #CI age
+cih
+ciw
+cia
+```
+Now for the others that are in a poisson distribution. 
+```{r}
+?qpois() #PLEASE help
+upper <- l_z + qpois(0.975, lambda = l_z)*se_zomb
+lower <- l_z + qpois(0.025,lambda = l_z)*se_zomb
+ciz <- c(lower,upper)
+ciz
+upper <- l_e + qpois(0.975, lambda = l_e)*se_ed
+lower <- l_e + qpois(0.025,lambda = l_e)*se_ed
+cie <- c(lower,upper)
+cie
+```
+WOOO! I'm gonna prentend this tiny alteration from the normally distributed CI code didn't just take me days to figure out. 
+
+6. Now draw 99 more random samples of 30 zombie apocalypse survivors, and calculate the mean for each variable for each of these samples. Together with the first sample you drew, you now have a set of 100 means for each variable (each based on 30 observations), which constitutes a sampling distribution for each variable. What are the means and standard deviations of this distribution of means for each variable? How do the standard deviations of means compare to the standard errors estimated in [5]? What do these sampling distributions look like (a graph might help here)? Are they normally distributed? What about for those variables that you concluded were not originally drawn from a normal distribution?
+
+Means and SD for age: 
+```{r}
+set.seed = TRUE #so I get the same subset each time
+a <- replicate(100, sample(s$age, 30, replace = FALSE)) #take 100 subsets of 30 ages 
+a #each column is a subset of 30
+a_df <- as.data.frame(a) #thought this may be easier as a data frame
+a_df
+ma <- colMeans(a_df) #gives the means of each column (of each subset)
+m_age <- mean(ma) #gives the mean of all these means
+library(fBasics) #has a function similar to ColMeans but for SD
+?colStdevs()
+sda <- colStdevs(a_df)
+sda
+sd_age <- sd(sda)
+```
+
+weight:
+```{r}
+w <- replicate(100, sample(s$weight, 30, replace = FALSE)) 
+w_df <- as.data.frame(w) 
+w_df
+mw <- colMeans(w_df) 
+m_weight <- mean(mw) 
+sdw <- colStdevs(w_df)
+sdw
+sd_weight <- sd(sdw)
+```
+
+Height:
+```{r}
+h <- replicate(100, sample(s$height, 30, replace = FALSE)) 
+h_df <- as.data.frame(h) 
+h_df
+mh <- colMeans(h_df) 
+m_height <- mean(mh) 
+sdh <- colStdevs(h_df)
+sdh
+sd_height <- sd(sdh)
+```
+
+Zombies Killed:
+```{r}
+z <- replicate(100, sample(s$weight, 30, replace = FALSE)) 
+z_df <- as.data.frame(z) 
+z_df
+mz <- colMeans(z_df) 
+m_zomb <- mean(mz) 
+sdz <- colStdevs(z_df)
+sdz
+sd_zomb <- sd(sdz)
+```
+
+
+Years in school:
+```{r}
+e <- replicate(100, sample(s$years_of_education, 30, replace = FALSE)) 
+e_df <- as.data.frame(e) 
+e_df
+me <- colMeans(e_df) 
+m_ed <- mean(me) 
+sde <- colStdevs(e_df)
+sde
+sd_ed <- sd(sde)
+```
+
+
+Okay let's look at all of these stats: 
+```{r}
+#MEANS
+m_age
+m_weight
+m_height
+m_zomb
+m_ed
+#SD
+sd_age
+sd_weight
+sd_height
+sd_zomb
+sd_ed
+```
+ These compared to the SE from the first sample are very high; I'm not sure how we are supposed to be comparing SD and SE seeing as SE should be higher with higher deviation. 
+ 
+But, I can also compare to the SD from the first sample: 
+[1] 4.310126 (height)
+[1] 18.40106 (weight)
+[1] 2.965066 (age)
+[1] 1.748426 (zombies)
+[1] 1.676543 (education)
+
+All of them are much lower, with the exception of the SD for zombies killed. Maybe that has to do with whcih samples were randomly chosen? With the sample size being much higher in question 6, the lower SD for all the other variables is expected. 
+
+Now let's try to graph these to look at their distributions: 
+```{r}
+hist(a,probability=TRUE, main="Histogram of normal
+data",xlab="Approximately normally distributed data")
+hist(w,probability=TRUE, main="Histogram of normal
+data",xlab="Approximately normally distributed data")
+hist(h,probability=TRUE, main="Histogram of normal
+data",xlab="Approximately normally distributed data")
+hist(z,probability=TRUE, main="Histogram of normal
+data",xlab="Approximately normally distributed data")
+hist(e,probability=TRUE, main="Histogram of normal
+data",xlab="Approximately normally distributed data")
+```
+The variables that I considered to be normally distributed still seem to look that way, while years of education still looks to have a poisson distribution. Number of zombies killed, however, seems to be steering toward normal now... I'm not quite sure I would still consider it Poisson at this point.
+
+Challenges: 
+
+1. Took me a while (and some googling) to understand the difference between SD of a sample and a population, as well as how to do this in R. The equation itself was simple enough. 
+
+2. I had some trouble figuring out how to take a single sample. Looking into the function, it seems like i should be able to just call the data,state how many I want in the smaple, and replace = FALSE, but I keep getting an error that says the sample is larger than the population. Eventually, I loaded dplyr and used the sample_n() function and it worked. 
+
+3. It took me some googling to figure out how to find the confidence intervals for a poisson distribution. I tried different functions to calculate the intervals, but none seem to be working. So far, qpois has almost worked but I keep getting NAs. Eventually, I went back to trying my first attempt, which was to use the same code from the CIs of the normally distributed variables and changing qnorm to qpois, but this time, I realized I needed lambda and to emit other pieces of the function and it turned out. 
+
+4. I'm not sure how to add the one subset that I had already been working on so I just did the replication for 100 samples. I also wasn't sure if we were supposed to use the bootstrapping method here; I tried that for all of the data and had trouble figuring out how to take the means of the means of each subset. After googling, it seems I should do it one varirable at a time. But isn't this NOT taking a whole subset of 30 people each time? 
+
+5. Interpretting the matrix that resulted from the 100 replications to find the means of the means. For some reason, the bootstrapping code wasn't working for me (I'm getting a "argument is not numeric or logical" error). There should be some way to sample all the people together instead of variable by variable.
+
+6. Out of the blue, when using the se() function I started getting the error: Error in n$zombies_killed : $ operator is invalid for atomic vectors. This happened once i started knitting it but it was working before?!
